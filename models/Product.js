@@ -26,6 +26,15 @@ const productSchema = new mongoose.Schema({
         required: [true, "Stock is required"],
         min: [0, "Stock cannot be negative"],
         default: 0
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 

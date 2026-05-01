@@ -1,16 +1,13 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const AppError = require("../utils/AppError");
 
 const protect = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({
-                success: false,
-                message: "Доступ заборонено. Токен відсутній",
-                data: null
-            });
+            return next(new AppError("Доступ заборонено. Токен відсутній", 401));
         }
 
         const token = authHeader.split(" ")[1];
@@ -19,21 +16,13 @@ const protect = async (req, res, next) => {
         const user = await User.findById(decoded.id);
 
         if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: "Користувача не знайдено",
-                data: null
-            });
+            return next(new AppError("Користувача не знайдено", 401));
         }
 
         req.user = user;
         next();
     } catch (error) {
-        return res.status(401).json({
-            success: false,
-            message: "Недійсний токен",
-            data: null
-        });
+        next(new AppError("Недійсний токен", 401));
     }
 };
 
