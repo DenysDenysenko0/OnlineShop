@@ -1,87 +1,49 @@
-const Product = require("../models/Product");
-const AppError = require("../utils/AppError");
+const catchAsync = require("../utils/catchAsync");
+const productService = require("../services/productService");
 
-exports.getAllProducts = async (req, res, next) => {
-    try {
-        const products = await Product.find().populate("createdBy", "name email");
+exports.getAllProducts = catchAsync(async (req, res) => {
+    const result = await productService.getAllProducts(req.query);
 
-        return res.status(200).json({
-            success: true,
-            count: products.length,
-            data: products
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+    res.status(200).json({
+        success: true,
+        count: result.products.length,
+        pagination: result.pagination,
+        data: result.products
+    });
+});
 
-exports.getProduct = async (req, res, next) => {
-    try {
-        const product = await Product.findById(req.params.id).populate("createdBy", "name email");
+exports.getProduct = catchAsync(async (req, res) => {
+    const product = await productService.getProductById(req.params.id);
 
-        if (!product) {
-            return next(new AppError("Товар не знайдено", 404));
-        }
+    res.status(200).json({
+        success: true,
+        data: product
+    });
+});
 
-        return res.status(200).json({
-            success: true,
-            data: product
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+exports.createProduct = catchAsync(async (req, res) => {
+    const product = await productService.createProduct(req.body, req.user._id);
 
-exports.createProduct = async (req, res, next) => {
-    try {
-        const product = await Product.create({
-            ...req.body,
-            createdBy: req.user._id
-        });
+    res.status(201).json({
+        success: true,
+        data: product
+    });
+});
 
-        return res.status(201).json({
-            success: true,
-            data: product
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+exports.updateProduct = catchAsync(async (req, res) => {
+    const product = await productService.updateProduct(req.params.id, req.body, req.user);
 
-exports.updateProduct = async (req, res, next) => {
-    try {
-        const product = await Product.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        );
+    res.status(200).json({
+        success: true,
+        data: product
+    });
+});
 
-        if (!product) {
-            return next(new AppError("Товар не знайдено", 404));
-        }
+exports.deleteProduct = catchAsync(async (req, res) => {
+    await productService.deleteProduct(req.params.id);
 
-        return res.status(200).json({
-            success: true,
-            data: product
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-exports.deleteProduct = async (req, res, next) => {
-    try {
-        const product = await Product.findByIdAndDelete(req.params.id);
-
-        if (!product) {
-            return next(new AppError("Товар не знайдено", 404));
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Товар видалено"
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+    res.status(200).json({
+        success: true,
+        message: "Товар видалено"
+    });
+});
