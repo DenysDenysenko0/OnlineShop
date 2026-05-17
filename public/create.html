@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Додати товар</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Додати товар</h1>
+
+    <nav>
+        <a href="/index.html">Товари</a>
+        <a href="/login.html">Вхід</a>
+    </nav>
+
+    <form id="createForm">
+        <input type="text" id="name" placeholder="Назва товару" required>
+        <textarea id="description" placeholder="Опис товару" required></textarea>
+        <input type="number" id="price" placeholder="Ціна" required>
+        <input type="text" id="category" placeholder="Категорія" required>
+        <input type="number" id="stock" placeholder="Кількість на складі" required>
+        <button type="submit">Додати</button>
+    </form>
+
+    <p id="message"></p>
+
+    <script>
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            window.location.href = "/login.html";
+        }
+
+        document.getElementById("createForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const body = {
+                name: document.getElementById("name").value,
+                description: document.getElementById("description").value,
+                price: Number(document.getElementById("price").value),
+                category: document.getElementById("category").value,
+                stock: Number(document.getElementById("stock").value)
+            };
+
+            const response = await fetch("/api/products", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            const data = await response.json();
+            const message = document.getElementById("message");
+
+            if (!response.ok) {
+                message.textContent = data.message;
+                return;
+            }
+
+            message.textContent = "Товар додано!";
+
+            setTimeout(() => {
+                window.location.href = "/index.html";
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>OnlineShop</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Товари</h1>
+
+    <nav>
+        <a href="/login.html">Авторизація</a>
+        <a href="/register.html">Реєстрація</a>
+        <a href="/create.html">Додати товар</a>
+        <button id="logoutBtn">Вийти</button>
+    </nav>
+
+    <p id="message"></p>
+    <ul id="productList"></ul>
+
+    <script>
+        async function loadProducts() {
+            const response = await fetch("/api/products");
+            const data = await response.json();
+            const list = document.getElementById("productList");
+            const message = document.getElementById("message");
+
+            if (!response.ok) {
+                message.textContent = data.message;
+                return;
+            }
+
+            if (!data.data || data.data.length === 0) {
+                list.innerHTML = "<li>Товарів поки немає</li>";
+                return;
+            }
+
+            list.innerHTML = data.data.map((product) => `
+                <li>
+                    <strong>${product.name}</strong><br>
+                    Категорія: ${product.category}<br>
+                    Ціна: ${product.price}<br>
+                    Кількість: ${product.stock}<br>
+                    Опис: ${product.description}
+                </li>
+            `).join("");
+        }
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("token");
+            window.location.href = "/login.html";
+        });
+
+        loadProducts();
+    </script>
+</body>
+</html>
