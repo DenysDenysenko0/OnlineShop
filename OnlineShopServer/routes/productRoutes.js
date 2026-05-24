@@ -3,13 +3,20 @@ const router = express.Router();
 const protect = require("../middleware/protect");
 const restrictTo = require("../middleware/restrictTo");
 const validate = require("../middleware/validate");
+const reviewRouter = require("./reviewRoutes");
 const {
     createProductSchema,
     updateProductSchema
 } = require("../validators/productValidators");
 const {
-    getAllProducts, getProduct, createProduct, updateProduct, deleteProduct
+    getAllProducts,
+    getProduct,
+    createProduct,
+    updateProduct,
+    deleteProduct
 } = require("../controllers/productController");
+
+router.use("/:productId/reviews", reviewRouter);
 
 router.get("/", getAllProducts);
 router.get("/:id", getProduct);
