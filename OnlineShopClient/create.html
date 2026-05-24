@@ -25,11 +25,19 @@
     <p id="message"></p>
 
     <script>
-        const token = localStorage.getItem("token");
+        const API_URL = "http://localhost:3000";
 
-        if (!token) {
-            window.location.href = "/login.html";
+        async function checkAuth() {
+            const response = await fetch(`${API_URL}/api/auth/me`, {
+                credentials: "include"
+            });
+
+            if (!response.ok) {
+                window.location.href = "/login.html";
+            }
         }
+
+        checkAuth();
 
         document.getElementById("createForm").addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -42,11 +50,11 @@
                 stock: Number(document.getElementById("stock").value)
             };
 
-            const response = await fetch("/api/products", {
+            const response = await fetch(`${API_URL}/api/products`, {
                 method: "POST",
+                credentials: "include",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify(body)
             });
@@ -55,6 +63,11 @@
             const message = document.getElementById("message");
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.href = "/login.html";
+                    return;
+                }
+
                 message.textContent = data.message;
                 return;
             }
