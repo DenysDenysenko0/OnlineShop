@@ -14,7 +14,15 @@ dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const app = express();
 
-app.use(morgan("dev"));
+console.log(process.env.NODE_ENV);
+
+const isDev = process.env.NODE_ENV !== 'production';
+
+if (isDev) {
+ app.use(morgan('dev'));
+} else {
+ app.use(morgan('combined'));
+}
 
 app.use(cors({
     origin: process.env.CLIENT_URL || "http://localhost:5500",
@@ -54,10 +62,11 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
         console.log("MongoDB connected");
 
-        app.listen(process.env.PORT || 3000, () => {
-            console.log("Server is running on port 3000");
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
         });
     })
     .catch((error) => {
         console.error("Database connection error:", error.message);
+        process.exit(1);
     });
