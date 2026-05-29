@@ -9,6 +9,7 @@ const morgan = require("morgan");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
 const AppError = require("./utils/AppError");
+const PORT = process.env.PORT || 3000;
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
