@@ -107,3 +107,43 @@ button:hover {
     border: 2px solid #14213d;
     border-radius: 8px;
 }
+
+.field {
+    margin-bottom: 12px;
+}
+
+.field-error {
+    display: block;
+    min-height: 16px;
+    color: #dc2626;
+    font-size: 12px;
+}
+
+input.error,
+textarea.error {
+    border: 2px solid #dc2626;
+}
+
+input.valid, textarea.valid {
+    border: 2px solid #16a34a;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#serverErrors {
+    width: 320px;
+    margin: 0 auto;
+    color: #dc2626;
+    font-weight: bold;
+}
+
+#serverErrors p {
+    margin: 6px 0;
+}
+
+.review-link {
+    margin-top: 10px;
+}

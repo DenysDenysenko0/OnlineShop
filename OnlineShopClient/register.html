@@ -13,12 +13,30 @@
         <a href="/login.html">Авторизація</a>
     </nav>
 
+    <div id="serverErrors"></div>
+
     <form id="registerForm">
-        <input type="text" id="name" placeholder="Ім'я" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Пароль" required>
-        <input type="password" id="confirmPassword" placeholder="Підтвердіть пароль" required>
-        <button type="submit">Зареєструватися</button>
+        <div class="field">
+            <input type="text" id="name" placeholder="Ім'я" required>
+            <span class="field-error" id="nameError"></span>
+        </div>
+
+        <div class="field">
+            <input type="email" id="email" placeholder="Email" required>
+            <span class="field-error" id="emailError"></span>
+        </div>
+
+        <div class="field">
+            <input type="password" id="password" placeholder="Пароль" required>
+            <span class="field-error" id="passwordError"></span>
+        </div>
+
+        <div class="field">
+            <input type="password" id="confirmPassword" placeholder="Підтвердіть пароль" required>
+            <span class="field-error" id="confirmPasswordError"></span>
+        </div>
+
+        <button type="submit" id="submitBtn" disabled>Зареєструватися</button>
     </form>
 
     <p id="message"></p>
@@ -26,14 +44,95 @@
     <script>
         const API_URL = "http://localhost:3000";
 
+        const nameInput = document.getElementById("name");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const confirmPasswordInput = document.getElementById("confirmPassword");
+        const submitBtn = document.getElementById("submitBtn");
+        const serverErrors = document.getElementById("serverErrors");
+
+        function setError(input, errorId, message) {
+            input.classList.add("error");
+            input.classList.remove("valid");
+            document.getElementById(errorId).textContent = message;
+        }
+
+        function setValid(input, errorId) {
+            input.classList.remove("error");
+            input.classList.add("valid");
+            document.getElementById(errorId).textContent = "";
+        }
+
+        function validateName() {
+            if (nameInput.value.trim().length < 2) {
+                setError(nameInput, "nameError", "Ім'я має містити мінімум 2 символи");
+                return false;
+            }
+
+            setValid(nameInput, "nameError");
+            return true;
+        }
+
+        function validateEmail() {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailPattern.test(emailInput.value.trim())) {
+                setError(emailInput, "emailError", "Введіть коректний email");
+                return false;
+            }
+
+            setValid(emailInput, "emailError");
+            return true;
+        }
+
+        function validatePassword() {
+            if (passwordInput.value.length < 8) {
+                setError(passwordInput, "passwordError", "Пароль має містити мінімум 8 символів");
+                return false;
+            }
+
+            setValid(passwordInput, "passwordError");
+            return true;
+        }
+
+        function validateConfirmPassword() {
+            if (confirmPasswordInput.value !== passwordInput.value || !confirmPasswordInput.value) {
+                setError(confirmPasswordInput, "confirmPasswordError", "Паролі не збігаються");
+                return false;
+            }
+
+            setValid(confirmPasswordInput, "confirmPasswordError");
+            return true;
+        }
+
+        function validateForm() {
+            const isValid = validateName() &&
+                validateEmail() &&
+                validatePassword() &&
+                validateConfirmPassword();
+
+            submitBtn.disabled = !isValid;
+            return isValid;
+        }
+
+        [nameInput, emailInput, passwordInput, confirmPasswordInput].forEach((input) => {
+            input.addEventListener("input", validateForm);
+            input.addEventListener("blur", validateForm);
+        });
+
         document.getElementById("registerForm").addEventListener("submit", async (e) => {
             e.preventDefault();
+            serverErrors.innerHTML = "";
+
+            if (!validateForm()) {
+                return;
+            }
 
             const body = {
-                name: document.getElementById("name").value,
-                email: document.getElementById("email").value,
-                password: document.getElementById("password").value,
-                confirmPassword: document.getElementById("confirmPassword").value
+                name: nameInput.value,
+                email: emailInput.value,
+                password: passwordInput.value,
+                confirmPassword: confirmPasswordInput.value
             };
 
             const response = await fetch(`${API_URL}/api/auth/register`, {
@@ -44,14 +143,14 @@
             });
 
             const data = await response.json();
-            const message = document.getElementById("message");
 
             if (!response.ok) {
-                message.textContent = data.message;
+                const errors = data.errors || [data.message];
+                serverErrors.innerHTML = errors.map((error) => `<p>${error}</p>`).join("");
                 return;
             }
 
-            message.textContent = "Реєстрація успішна!";
+            document.getElementById("message").textContent = "Реєстрація успішна!";
 
             setTimeout(() => {
                 window.location.href = "/index.html";

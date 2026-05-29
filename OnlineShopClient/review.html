@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Залишити відгук</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Залишити відгук</h1>
+
+    <nav>
+        <a href="/index.html">Товари</a>
+        <a href="/login.html">Авторизація</a>
+    </nav>
+
+    <div id="serverErrors"></div>
+
+    <form id="reviewForm">
+        <div class="field">
+            <input type="number" id="rating" min="1" max="5" placeholder="Оцінка від 1 до 5" required>
+            <span class="field-error" id="ratingError"></span>
+        </div>
+
+        <div class="field">
+            <textarea id="comment" rows="4" placeholder="Відгук, мінімум 10 символів" required></textarea>
+            <span class="field-error" id="commentError"></span>
+        </div>
+
+        <button type="submit" id="submitBtn">Надіслати</button>
+    </form>
+
+    <p id="message"></p>
+
+    <script>
+        const API_URL = "http://localhost:3000";
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get("productId");
+
+        const ratingInput = document.getElementById("rating");
+        const commentInput = document.getElementById("comment");
+        const serverErrors = document.getElementById("serverErrors");
+
+        if (!productId) {
+            window.location.href = "/index.html";
+        }
+
+        function setError(input, errorId, message) {
+            input.classList.add("error");
+            input.classList.remove("valid");
+            document.getElementById(errorId).textContent = message;
+        }
+
+        function setValid(input, errorId) {
+            input.classList.remove("error");
+            input.classList.add("valid");
+            document.getElementById(errorId).textContent = "";
+        }
+
+        function validateRating() {
+            const rating = Number(ratingInput.value);
+
+            if (!rating || rating < 1 || rating > 5) {
+                setError(ratingInput, "ratingError", "Оцінка має бути від 1 до 5");
+                return false;
+            }
+
+            setValid(ratingInput, "ratingError");
+            return true;
+        }
+
+        function validateComment() {
+            if (commentInput.value.trim().length < 10) {
+                setError(commentInput, "commentError", "Відгук має містити мінімум 10 символів");
+                return false;
+            }
+
+            setValid(commentInput, "commentError");
+            return true;
+        }
+
+        ratingInput.addEventListener("input", validateRating);
+        commentInput.addEventListener("input", validateComment);
+
+        document.getElementById("reviewForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            serverErrors.innerHTML = "";
+
+            if (!validateRating() || !validateComment()) {
+                return;
+            }
+
+            const response = await fetch(`${API_URL}/api/products/${productId}/reviews`, {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    rating: Number(ratingInput.value),
+                    comment: commentInput.value
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.href = "/login.html";
+                    return;
+                }
+
+                const errors = data.errors || [data.message];
+                serverErrors.innerHTML = errors.map((error) => `<p>${error}</p>`).join("");
+                return;
+            }
+
+            document.getElementById("message").textContent = "Відгук додано!";
+
+            setTimeout(() => {
+                window.location.href = "/index.html";
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

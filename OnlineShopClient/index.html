@@ -46,7 +46,8 @@
                     Категорія: ${product.category}<br>
                     Ціна: ${product.price}<br>
                     Кількість: ${product.stock}<br>
-                    Опис: ${product.description}
+                    Опис: ${product.description}<br>
+                    <a class="review-link" href="/review.html?productId=${product._id}">Залишити відгук</a>
                 </li>
             `).join("");
         }
