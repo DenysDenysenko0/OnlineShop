@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const dns = require("dns");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
 const AppError = require("./utils/AppError");
@@ -12,6 +13,8 @@ const AppError = require("./utils/AppError");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const app = express();
+
+app.use(morgan("dev"));
 
 app.use(cors({
     origin: process.env.CLIENT_URL || "http://localhost:5500",
